@@ -1,0 +1,14 @@
+# 后端依赖
+fastapi>=0.109.0
+uvicorn>=0.27.0
+httpx>=0.27.0
+
+pydantic>=2.0.0
+
+# 嚂-h,安装 (仅后端需要)
+pip install fastapi uvicorn httpx pydantic
+
+# 前端依赖
+# 已在 web/package.json 中配置
+
+npm install

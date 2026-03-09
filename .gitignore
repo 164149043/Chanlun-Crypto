@@ -1,0 +1,39 @@
+# Python
+*.py[co]
+__pycache__
+*.pyo
+*-checkpoint.ipynb
+
+# IDE
+*.vscode
+.idea/
+
+# Logs
+*.log
+
+# Database
+*.db
+
+# 敏感配置
+config.py
+config.yaml
+OpenConfig.yaml
+cos_config.yaml
+.env
+
+# Node.js
+node_modules/
+dist/
+
+# Python虚拟环境
+venv/
+.venv/
+env/
+
+# 其他
+gotify_push.py
+
+# 临时文档和输出
+tradingview图表代码
+Bento Grid风格
+输出内容/
