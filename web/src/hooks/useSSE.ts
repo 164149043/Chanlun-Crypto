@@ -6,7 +6,9 @@ import { useCallback, useRef } from 'react';
 import { useAnalysisStore } from '../stores/analysisStore';
 import type { SSEEvent, PositionInfo } from '../types/api';
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000';
+// 生产环境(Vercel): VITE_API_BASE 为空字符串，使用相对路径
+// 开发环境: VITE_API_BASE 为 http://localhost:8000
+const API_BASE = import.meta.env.VITE_API_BASE ?? '';
 
 export function useSSE() {
   const abortControllerRef = useRef<AbortController | null>(null);

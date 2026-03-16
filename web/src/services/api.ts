@@ -4,7 +4,9 @@
 
 import type { KlineData, Symbol } from '../types/api';
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000';
+// 生产环境(Vercel): VITE_API_BASE 为空字符串，使用相对路径
+// 开发环境: VITE_API_BASE 为 http://localhost:8000
+const API_BASE = import.meta.env.VITE_API_BASE ?? '';
 
 export async function fetchSymbols(): Promise<string[]> {
   const response = await fetch(`${API_BASE}/api/symbols`);
