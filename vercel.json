@@ -4,7 +4,6 @@
   "public": true,
   "buildCommand": "cd web && npm install && npm run build",
   "outputDirectory": "web/dist",
-  "installCommand": "pip install -r requirements.txt",
   "framework": null,
   "rewrites": [
     {
