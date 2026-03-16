@@ -10,8 +10,20 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Dict, List, Optional
 
-# 导出ai_client中的函数
-from .ai_client import call_ai, create_client, AIClient
+# 尝试导入 ai_client，如果失败则定义占位符
+try:
+    from .ai_client import call_ai, create_client, AIClient
+except ImportError as e:
+    import logging
+    logging.warning(f"providers: 无法导入 ai_client: {e}")
+    # 定义占位符函数，避免导入错误
+    def call_ai(*args, **kwargs):
+        raise RuntimeError("ai_client 模块未正确加载")
+    def create_client(*args, **kwargs):
+        raise RuntimeError("ai_client 模块未正确加载")
+    class AIClient:
+        def __init__(self, *args, **kwargs):
+            raise RuntimeError("ai_client 模块未正确加载")
 
 
 class ProviderType(Enum):
