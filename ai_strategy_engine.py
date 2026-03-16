@@ -22,7 +22,13 @@ from typing import Any, Dict, List, Optional
 
 import requests
 
-from config import DEEPSEEK_API_KEY, PROXY_URL, COMMITTEE_CONFIG
+from config import (
+    DEEPSEEK_API_KEY,
+    SILICONFLOW_API_KEY,
+    PROXY_URL,
+    COMMITTEE_CONFIG,
+    DEFAULT_AI_PROVIDER,
+)
 from Chan import CChan
 from ChanConfig import CChanConfig
 from Common.CEnum import KL_TYPE
@@ -35,10 +41,14 @@ if sys.platform == "win32":
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
 
 # ============================================
+# 娡块导入
+# ============================================
+from providers import call_ai as provider_call_ai, get_api_url
+from providers.ai_client import AIClient
+
+# ============================================
 # 常量配置
 # ============================================
-DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions"
-DEFAULT_MODEL = "deepseek-reasoner"
 MAX_RETRIES = 3
 
 PERIODS = [
@@ -314,54 +324,106 @@ def build_judge_prompt(a: str, b: str, c: str, position: Dict = None) -> str:
 # ============================================
 # AI 调用
 # ============================================
-
-def call_ai(prompt: str, api_key: str, model: str = None, temperature: float = 0.4, max_tokens: int = None) -> str:
+def get_api_key(provider: str) -> str:
+    """根据Provider获取API Key"""
+    if provider == "deepseek":
+        return DEEPSEEK_API_KEY
+    elif provider == "siliconflow":
+        return SILICONFLOW_API_KEY
+    else:
+        return DEEPSEEK_API_KEY  # 默认使用DeepSeek
+def get_default_model(provider: str) -> str:
+    """根据Provider获取默认模型"""
+    from providers import get_provider_config
+    config = get_provider_config(provider)
+    return config.default_model
+def get_committee_config(role: str) -> Dict[str, Any]:
     """
-    调用 AI API
+    获取指定角色的配置
 
     Args:
-        prompt: 提示词
-        api_key: API 密钥
-        model: 模型名称（默认使用 DEFAULT_MODEL）
-        temperature: 温度参数
-        max_tokens: 最大输出 tokens（None 表示使用模型默认值）
-    """
-    model = model or DEFAULT_MODEL
-    headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
-    payload = {
-        "model": model,
-        "messages": [
-            {"role": "system", "content": "你是专业交易分析助手，请用中文回答。"},
-            {"role": "user", "content": prompt},
-        ],
-        "temperature": temperature,
-    }
-    if max_tokens:
-        payload["max_tokens"] = max_tokens
+        role: 角色名称 ("committee_a", "committee_b", "committee_c", "judge")
 
-    for attempt in range(MAX_RETRIES):
-        try:
-            logger.info(f"API 调用 ({model}, temp={temperature}, max_tokens={max_tokens}) 尝试 {attempt + 1}/{MAX_RETRIES}")
-            response = requests.post(DEEPSEEK_API_URL, headers=headers, json=payload, timeout=120)
-            response.raise_for_status()
-            content = response.json().get("choices", [{}])[0].get("message", {}).get("content", "")
-            if content:
-                return content
-        except requests.exceptions.RequestException as e:
-            logger.error(f"API 请求失败: {e}")
-    return ""
+    Returns:
+        配置字典，包含 provider, model, temperature, max_tokens
+    """
+    config = COMMITTEE_CONFIG
+
+    # 新配置结构：每个角色独立配置
+    if role in config:
+        return config[role]
+
+    # 向后兼容旧配置结构
+    default_config = {
+        "provider": config.get("provider", DEFAULT_AI_PROVIDER),
+        "temperature": 0.6,
+        "max_tokens": config.get("committee_max_tokens", 2000),
+    }
+
+    # 委员模型
+    if role.startswith("committee_"):
+        idx = ord(role[-1].upper()) - ord('A')
+        temps = config.get("committee_temperatures", [0.4, 0.7, 0.8])
+        default_config["model"] = config.get("committee_model", "deepseek-chat")
+        default_config["temperature"] = temps[idx] if idx < len(temps) else temps[-1]
+
+    # 裁决官模型
+    elif role == "judge":
+        default_config["model"] = config.get("judge_model", "deepseek-reasoner")
+        default_config["temperature"] = config.get("judge_temperature", 0.3)
+        default_config["max_tokens"] = config.get("judge_max_tokens", 2000)
+
+    return default_config
+def call_ai(
+    prompt: str,
+    provider: str = None,
+    model: str = None,
+    temperature: float = 0.6,
+    max_tokens: int = None,
+    api_key: str = None,  # 保留向后兼容
+) -> str:
+    """
+    调用 AI API (支持多Provider)
+    Args:
+        prompt: 提示词
+        provider: Provider名称 ("deepseek" 或 "siliconflow")
+        model: 模型名称
+        temperature: 温度参数
+        max_tokens: 最大输出 tokens
+        api_key: API密钥（向后兼容）
+    """
+    # 确定Provider
+    provider = provider or DEFAULT_AI_PROVIDER
+    # 获取API Key
+    if not api_key:
+        api_key = get_api_key(provider)
+    if not api_key:
+        logger.error(f"未配置 {provider} API Key")
+        return ""
+    # 获取默认模型
+    if not model:
+        model = get_default_model(provider)
+    # 使用统一AI客户端调用
+    return provider_call_ai(
+        prompt=prompt,
+        provider=provider,
+        api_key=api_key,
+        model=model,
+        temperature=temperature,
+        max_tokens=max_tokens,
+    )
 
 
 # ============================================
 # 三委员机制
 # ============================================
 
-def run_committee_analysis(data: Dict[str, Any], api_key: str) -> str:
+def run_committee_analysis(data: Dict[str, Any], api_key: str = None) -> str:
     """
     运行三委员分析机制
 
     流程：
-    1. 三委员并行/串行独立分析（各自使用不同温度）
+    1. 三委员并行/串行独立分析（各自使用不同Provider/模型/温度）
     2. 裁决官基于三份报告进行二级推理
     3. 返回完整分析结果
     """
@@ -370,30 +432,34 @@ def run_committee_analysis(data: Dict[str, Any], api_key: str) -> str:
     # 未启用三委员机制，使用单次调用
     if not config.get("enabled", False):
         logger.info("三委员机制未启用，使用单次调用")
-        return call_ai(build_analysis_prompt(data), api_key)
+        default_provider = config.get("provider", DEFAULT_AI_PROVIDER)
+        return call_ai(build_analysis_prompt(data), provider=default_provider)
 
     logger.info("启动三委员机制...")
     prompt = build_analysis_prompt(data, independent=True)
     analyses: List[str] = []
 
-    # 获取各委员温度配置
-    temperatures = config.get("committee_temperatures", [0.6, 0.6, 0.6])
-    committee_count = config["committee_count"]
-    committee_max_tokens = config.get("committee_max_tokens")
+    committee_count = config.get("committee_count", 3)
 
     # 并行/串行调用三委员
     if config.get("parallel", True):
         logger.info("并行调用三委员...")
         with concurrent.futures.ThreadPoolExecutor(max_workers=committee_count) as executor:
-            futures = [
-                executor.submit(
-                    call_ai, prompt, api_key,
-                    config["committee_model"],
-                    temperatures[i] if i < len(temperatures) else temperatures[-1],
-                    committee_max_tokens
+            futures = []
+            for i in range(committee_count):
+                role = f"committee_{chr(97 + i)}"  # committee_a, committee_b, committee_c
+                role_config = get_committee_config(role)
+                logger.info(f"  委员{chr(65 + i)}: provider={role_config['provider']}, model={role_config['model']}, temp={role_config['temperature']}")
+                futures.append(
+                    executor.submit(
+                        call_ai,
+                        prompt,
+                        role_config["provider"],
+                        role_config["model"],
+                        role_config["temperature"],
+                        role_config.get("max_tokens"),
+                    )
                 )
-                for i in range(committee_count)
-            ]
             for future in concurrent.futures.as_completed(futures):
                 try:
                     result = future.result(timeout=config.get("timeout", 120))
@@ -404,26 +470,29 @@ def run_committee_analysis(data: Dict[str, Any], api_key: str) -> str:
     else:
         logger.info("串行调用三委员...")
         for i in range(committee_count):
-            temp = temperatures[i] if i < len(temperatures) else temperatures[-1]
-            logger.info(f"  委员{chr(65 + i)} 温度={temp}")
+            role = f"committee_{chr(97 + i)}"
+            role_config = get_committee_config(role)
+            logger.info(f"  委员{chr(65 + i)}: provider={role_config['provider']}, model={role_config['model']}, temp={role_config['temperature']}")
             result = call_ai(
-                prompt, api_key,
-                config["committee_model"],
-                temp,
-                committee_max_tokens
+                prompt,
+                role_config["provider"],
+                role_config["model"],
+                role_config["temperature"],
+                role_config.get("max_tokens"),
             )
             if result:
                 analyses.append(result)
 
     # 检查结果
     valid_analyses = [a for a in analyses if a]
-    logger.info(f"委员分析完成: {len(valid_analyses)}/{config['committee_count']} 成功")
+    logger.info(f"委员分析完成: {len(valid_analyses)}/{config.get('committee_count', 3)} 成功")
 
     # 失败降级
     if len(valid_analyses) < 2:
         if config.get("fallback_on_failure", True):
             logger.warning("委员分析失败过多，降级到单次调用")
-            return call_ai(build_analysis_prompt(data), api_key)
+            default_provider = config.get("provider", DEFAULT_AI_PROVIDER)
+            return call_ai(build_analysis_prompt(data), provider=default_provider)
         return "委员分析失败"
 
     # 补齐到3份
@@ -432,14 +501,16 @@ def run_committee_analysis(data: Dict[str, Any], api_key: str) -> str:
 
     # 裁决官分析
     logger.info("进入裁决阶段...")
+    judge_config = get_committee_config("judge")
+    logger.info(f"  裁决官: provider={judge_config['provider']}, model={judge_config['model']}, temp={judge_config['temperature']}")
     # 提取持仓信息，传递给裁决官
     position = data.get("position")
     final_decision = call_ai(
         build_judge_prompt(*valid_analyses[:3], position=position),
-        api_key,
-        config["judge_model"],
-        config["judge_temperature"],
-        config.get("judge_max_tokens")
+        judge_config["provider"],
+        judge_config["model"],
+        judge_config["temperature"],
+        judge_config.get("max_tokens"),
     )
 
     if not final_decision:
