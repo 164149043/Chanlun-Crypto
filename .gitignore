@@ -37,3 +37,9 @@ gotify_push.py
 tradingview图表代码
 Bento Grid风格
 输出内容
+
+# Vercel
+.vercel
+
+# Claude
+.claude/
