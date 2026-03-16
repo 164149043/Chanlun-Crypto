@@ -37,11 +37,26 @@ from .risk_narrative import RiskNarrativeEngine, RiskNarrative
 logger = logging.getLogger(__name__)
 
 
-# DeepSeek API 配置
-DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions"
-DEFAULT_MODEL = "deepseek-reasoner"
+# API 配置
 MAX_RETRIES = 3
 RETRY_DELAY = 2
+
+# 导入配置
+try:
+    from config import (
+        DEEPSEEK_API_KEY,
+        SILICONFLOW_API_KEY,
+        COGNITIVE_AI_CONFIG,
+        DEFAULT_AI_PROVIDER,
+    )
+except ImportError:
+    DEEPSEEK_API_KEY = ""
+    SILICONFLOW_API_KEY = ""
+    COGNITIVE_AI_CONFIG = {"enabled": True, "provider": "deepseek", "model": None}
+    DEFAULT_AI_PROVIDER = "deepseek"
+
+# 导入统一AI客户端
+from providers import call_ai as provider_call_ai
 
 
 @dataclass
@@ -110,16 +125,32 @@ class CognitiveAI:
     ⚠️ AI不改决策，只提供认知增强
     """
 
-    def __init__(self, api_key: str = None, model: str = DEFAULT_MODEL):
+    def __init__(
+        self,
+        api_key: str = None,
+        model: str = None,
+        provider: str = None,
+    ):
         """
         初始化认知AI引擎
 
         Args:
-            api_key: DeepSeek API密钥
+            api_key: API密钥（向后兼容）
             model: 模型名称
+            provider: Provider名称 ("deepseek" 或 "siliconflow")
         """
+        # 从配置获取默认Provider
+        self.provider = provider or COGNITIVE_AI_CONFIG.get("provider", DEFAULT_AI_PROVIDER)
+        self.model = model or COGNITIVE_AI_CONFIG.get("model")
+
+        # 如果没有传入api_key，从配置读取
+        if not api_key:
+            if self.provider == "deepseek":
+                api_key = DEEPSEEK_API_KEY
+            elif self.provider == "siliconflow":
+                api_key = SILICONFLOW_API_KEY
+
         self.api_key = api_key
-        self.model = model
 
     def analyze(
         self,
@@ -354,7 +385,7 @@ class CognitiveAI:
 
     def _call_api(self, prompt: str) -> Optional[str]:
         """
-        调用DeepSeek API
+        调用AI API (支持多Provider)
 
         Args:
             prompt: 提示词
@@ -362,51 +393,29 @@ class CognitiveAI:
         Returns:
             API响应文本，失败返回None
         """
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json"
-        }
+        if not self.api_key:
+            logger.warning("未配置API密钥")
+            return None
 
-        payload = {
-            "model": self.model,
-            "messages": [
-                {"role": "user", "content": prompt}
-            ],
-            "temperature": 0.3,  # 降低随机性
-            "max_tokens": 2000
-        }
-
-        for attempt in range(MAX_RETRIES):
-            try:
-                logger.info(f"API 调用尝试 {attempt + 1}/{MAX_RETRIES}")
-                response = requests.post(
-                    DEEPSEEK_API_URL,
-                    headers=headers,
-                    json=payload,
-                    timeout=120
-                )
-                response.raise_for_status()
-
-                data = response.json()
-                content = data.get("choices", [{}])[0].get("message", {}).get("content", "")
-
-                if content:
-                    logger.info(f"API 响应长度: {len(content)} 字符")
-                    return content
-
-            except requests.exceptions.Timeout:
-                logger.warning(f"请求超时，尝试 {attempt + 1}/{MAX_RETRIES}")
-                if attempt < MAX_RETRIES - 1:
-                    import time
-                    time.sleep(RETRY_DELAY * (attempt + 1))
-
-            except requests.exceptions.RequestException as e:
-                logger.error(f"API 请求失败: {e}")
-                if attempt < MAX_RETRIES - 1:
-                    import time
-                    time.sleep(RETRY_DELAY * (attempt + 1))
-
-        return None
+        try:
+            logger.info(f"[{self.provider}] API调用开始")
+            content = provider_call_ai(
+                prompt=prompt,
+                provider=self.provider,
+                api_key=self.api_key,
+                model=self.model,
+                temperature=0.3,
+                max_tokens=2000,
+            )
+            if content:
+                logger.info(f"[{self.provider}] API响应长度: {len(content)} 字符")
+                return content
+            else:
+                logger.warning(f"[{self.provider}] API返回空内容")
+                return None
+        except Exception as e:
+            logger.error(f"[{self.provider}] API调用失败: {e}")
+            return None
 
     def _parse_response(self, response_text: str, insight: CognitiveInsight = None) -> CognitiveInsight:
         """
