@@ -13,8 +13,9 @@
 
 ### AI 策略引擎
 - 多周期缠论数据自动采集（D1/H4/H1/M15）
-- 接入 DeepSeek AI 进行策略分析
+- **多 Provider 支持**：DeepSeek、SiliconFlow（硅基流动），可灵活切换
 - **三委员 + 裁决官机制**：多角度独立分析，综合决策
+- **独立角色配置**：每个委员/裁决官可独立选择 Provider、模型、温度
 - **温度参数控制**：每个委员/裁决官可调节温度（0.1-1.0）
 - **持仓感知分析**：支持输入持仓信息（多头/空头/空仓 + 入场价）
 - 支持并行/串行调用
@@ -76,6 +77,9 @@ Chanlun-Crypto/
 │       └── Features.py
 │
 ├── 📁 AI 引擎
+│   ├── providers/              # AI Provider 模块（统一调用层）
+│   │   ├── __init__.py             # Provider 配置与导出
+│   │   └── ai_client.py            # 统一 AI 调用客户端
 │   ├── engines/                # AI 分析引擎
 │   │   ├── cognitive_ai.py         # 认知 AI
 │   │   ├── conflict_analyzer.py    # 冲突分析
@@ -158,6 +162,10 @@ cd Chanlun-Crypto
 
 # 安装依赖
 pip install -r requirements.txt
+
+# 配置 API Key
+cp config.example.py config.py
+# 编辑 config.py，填入你的 API Key
 ```
 
 ## 配置
@@ -165,27 +173,63 @@ pip install -r requirements.txt
 ### 后端配置（config.py）
 
 ```python
-# DeepSeek API
+# AI Provider 配置（支持多AI服务提供商）
+DEFAULT_AI_PROVIDER = "deepseek"  # 可选: "deepseek", "siliconflow"
+
+# DeepSeek API（获取密钥: https://platform.deepseek.com/）
 DEEPSEEK_API_KEY = "your-api-key"
+
+# 硅基流动 API（获取密钥: https://cloud.siliconflow.cn/）
+SILICONFLOW_API_KEY = ""  # 留空表示不使用
 
 # 代理（可选）
 PROXY_URL = "http://127.0.0.1:7890"
 
-# 三委员配置
+# 三委员配置（每个角色可独立选择 Provider 和模型）
 COMMITTEE_CONFIG = {
-    "enabled": True,              # 是否启用
-    "committee_count": 3,         # 委员数量
-    "committee_model": "deepseek-chat",
-    "committee_temperatures": [0.4, 0.6, 0.7],  # 各委员温度（可在前端调节）
-    "committee_max_tokens": 2000, # 委员最大输出
-    "judge_model": "deepseek-reasoner",
-    "judge_temperature": 0.3,     # 裁决官温度（可在前端调节）
-    "judge_max_tokens": 1000,
-    "parallel": True,             # 并行调用
-    "timeout": 120,               # 超时时间
-    "fallback_on_failure": True,  # 失败降级
+    "enabled": True,
+    "committee_count": 3,
+    "parallel": True,
+    "timeout": 120,
+    "fallback_on_failure": True,
+
+    # 委员A - 保守派
+    "committee_a": {
+        "provider": "deepseek",
+        "model": "deepseek-chat",
+        "temperature": 0.4,
+        "max_tokens": 2000,
+    },
+    # 委员B - 中立派
+    "committee_b": {
+        "provider": "siliconflow",
+        "model": "Qwen/Qwen2.5-72B-Instruct",
+        "temperature": 0.6,
+        "max_tokens": 2000,
+    },
+    # 委员C - 激进派
+    "committee_c": {
+        "provider": "deepseek",
+        "model": "deepseek-chat",
+        "temperature": 0.8,
+        "max_tokens": 2000,
+    },
+    # 裁决官 - 综合决策
+    "judge": {
+        "provider": "deepseek",
+        "model": "deepseek-reasoner",
+        "temperature": 0.3,
+        "max_tokens": 2000,
+    },
 }
 ```
+
+### 支持的 AI Provider
+
+| Provider | 说明 | 推荐模型 |
+|----------|------|----------|
+| DeepSeek | 官方 DeepSeek API | deepseek-chat, deepseek-reasoner |
+| SiliconFlow | 硅基流动（支持多种开源模型） | Qwen/Qwen2.5-72B-Instruct, deepseek-ai/DeepSeek-V3 |
 
 ### 前端配置
 
@@ -195,12 +239,12 @@ COMMITTEE_CONFIG = {
 - 代码/数字：JetBrains Mono
 
 **温度参数说明：**
-| 委员 | 默认温度 | 角色 |
-|------|----------|------|
-| 委员A | 0.4 | 保守派 |
-| 委员B | 0.6 | 中立派 |
-| 委员C | 0.7 | 激进派 |
-| 裁决官 | 0.3 | 综合决策 |
+| 角色 | 默认温度 | 角色 | 默认 Provider |
+|------|----------|------|---------------|
+| 委员A | 0.4 | 保守派 | DeepSeek |
+| 委员B | 0.6 | 中立派 | SiliconFlow |
+| 委员C | 0.7 | 激进派 | DeepSeek |
+| 裁决官 | 0.3 | 综合决策 | DeepSeek |
 
 温度越低输出越确定，温度越高输出越多样化。
 
@@ -365,7 +409,8 @@ bs_list = kl.bs_point_lst   # 买卖点列表
 - Python >= 3.11
 - requests
 - FastAPI
-- （其他依赖见 requirements.txt）
+- sse-starlette
+- （其他依赖见根目录 `requirements.txt`）
 
 ### 前端
 - Node.js >= 18
@@ -376,7 +421,7 @@ bs_list = kl.bs_point_lst   # 买卖点列表
 - Framer Motion
 - Zustand
 - Lightweight Charts
-- （其他依赖见 web/package.json）
+- （其他依赖见 `web/package.json`）
 
 ---
 
