@@ -55,8 +55,6 @@ async def get_kline(
 
     try:
         # 导入缠论相关模块
-        from api.sse import stream_analyze_symbol
-
         from Chan import CChan
         from ChanConfig import CChanConfig
         from Common.CEnum import KL_TYPE
