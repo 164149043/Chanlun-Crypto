@@ -8,7 +8,7 @@ import { motion } from 'framer-motion';
 import { Activity } from 'lucide-react';
 
 // 组件
-import { BentoGrid, BentoCard } from './components/layout/BentoGrid';
+import { BentoCard } from './components/layout/BentoGrid';
 import { SymbolSelector } from './components/analysis/SymbolSelector';
 import { AnalyzeButton } from './components/analysis/AnalyzeButton';
 import { CommitteeCard } from './components/analysis/CommitteeCard';
@@ -168,20 +168,20 @@ function App() {
         </div>
       </header>
 
-      {/* Main Content - 4 列布局 */}
-      <BentoGrid>
-        {/* 左侧任务栏 - 占 1 列 */}
-        <div className="lg:col-span-1">
+      {/* Main Content - Flex 布局 */}
+      <div className="flex flex-col lg:flex-row gap-4 px-4 py-6 min-h-[calc(100vh-80px)]">
+        {/* 左侧任务栏 - 固定宽度 */}
+        <div className="w-full lg:w-72 flex-shrink-0">
           <BentoCard className="h-full">
             <Sidebar />
           </BentoCard>
         </div>
 
-        {/* 右侧区域 - 占 3 列 */}
-        <div className="lg:col-span-3 flex flex-col gap-4">
+        {/* 右侧区域 - 自动填充 */}
+        <div className="flex-1 flex flex-col gap-4 min-w-0">
           {renderPageContent()}
         </div>
-      </BentoGrid>
+      </div>
     </div>
   );
 }
