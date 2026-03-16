@@ -17,7 +17,7 @@
   ],
   "functions": {
     "api/index.py": {
-      "maxDuration": 200
+      "maxDuration": 300
     }
   },
   "headers": [
