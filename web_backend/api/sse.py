@@ -1,5 +1,6 @@
 """
 SSE 流式处理 - 改造 AI 策略引擎支持流式输出
+支持多Provider（DeepSeek、硅基流动等）
 """
 
 import asyncio
@@ -14,16 +15,25 @@ import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-from config import DEEPSEEK_API_KEY, COMMITTEE_CONFIG, PROXY_URL
+from config import (
+    DEEPSEEK_API_KEY,
+    SILICONFLOW_API_KEY,
+    COMMITTEE_CONFIG,
+    PROXY_URL,
+    DEFAULT_AI_PROVIDER,
+)
 from ai_strategy_engine import (
     get_multi_cycle_data,
     build_analysis_prompt,
     build_judge_prompt,
+    get_committee_config,
+    get_api_key,
 )
 
 logger = logging.getLogger(__name__)
 
-DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions"
+# 导入统一AI客户端
+from providers import create_client
 
 
 def format_sse_event(data: dict) -> str:
@@ -33,100 +43,62 @@ def format_sse_event(data: dict) -> str:
 
 async def stream_ai_call(
     prompt: str,
-    api_key: str,
-    model: str = "deepseek-chat",
+    provider: str = None,
+    model: str = None,
     temperature: float = 0.6,
     max_tokens: int = None,
+    api_key: str = None,  # 保留向后兼容
 ) -> AsyncGenerator[str, None]:
     """
-    流式调用 AI API
+    流式调用 AI API (支持多Provider)
 
     Args:
         prompt: 提示词
-        api_key: API 密钥
+        provider: Provider名称 ("deepseek" 或 "siliconflow")
         model: 模型名称
         temperature: 温度参数
         max_tokens: 最大输出 tokens
+        api_key: API密钥（向后兼容）
 
     Yields:
         str: 逐字返回的 AI 输出
     """
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json",
-    }
+    # 确定Provider
+    provider = provider or DEFAULT_AI_PROVIDER
 
-    payload = {
-        "model": model,
-        "messages": [
-            {"role": "system", "content": "你是专业交易分析助手，请用中文回答。"},
-            {"role": "user", "content": prompt},
-        ],
-        "temperature": temperature,
-        "stream": True,  # 启用流式输出
-    }
+    # 获取API Key
+    if not api_key:
+        api_key = get_api_key(provider)
 
-    if max_tokens:
-        payload["max_tokens"] = max_tokens
+    if not api_key:
+        yield "[错误: 未配置API密钥]"
+        return
 
-    timeout = httpx.Timeout(120.0, connect=30.0)
+    # 创建客户端并流式调用
+    client = create_client(provider, api_key, proxy_url=PROXY_URL)
 
-    proxy = PROXY_URL if PROXY_URL else None
-    async with httpx.AsyncClient(timeout=timeout, proxy=proxy) as client:
-        try:
-            async with client.stream(
-                "POST",
-                DEEPSEEK_API_URL,
-                headers=headers,
-                json=payload,
-            ) as response:
-                response.raise_for_status()
-
-                async for line in response.aiter_lines():
-                    if not line or line == "":
-                        continue
-
-                    if line.startswith("data: "):
-                        chunk = line[6:]
-                        if chunk == "[DONE]":
-                            break
-
-                        try:
-                            data = json.loads(chunk)
-                            choices = data.get("choices", [])
-                            if choices:
-                                delta = choices[0].get("delta", {})
-                                content = delta.get("content", "")
-                                if content:
-                                    yield content
-                        except json.JSONDecodeError:
-                            continue
-
-        except httpx.HTTPStatusError as e:
-            logger.error(f"API 请求失败: {e}")
-            yield f"[错误: API 请求失败 - {e.response.status_code}]"
-        except Exception as e:
-            logger.error(f"流式调用异常: {e}")
-            yield f"[错误: {str(e)}]"
+    try:
+        async for chunk in client.call_stream(
+            prompt,
+            model=model,
+            temperature=temperature,
+            max_tokens=max_tokens,
+        ):
+            yield chunk
+    except Exception as e:
+        logger.error(f"[{provider}] 流式调用异常: {e}")
+        yield f"[错误: {str(e)}]"
 
 
 async def stream_committee_parallel(
     prompt: str,
-    api_key: str,
-    temperatures: List[float],
-    model: str,
-    max_tokens: int,
     queue: asyncio.Queue,
 ):
     """
-    并行流式调用单个委员
+    并行流式调用单个委员 (支持多Provider)
 
     Args:
         prompt: 提示词
-        api_key: API 密钥
-        temperatures: 温度列表
-        model: 模型名称
-        max_tokens: 最大 tokens
         queue: 用于传递输出的队列
     """
     committee_ids = ["committee_a", "committee_b", "committee_c"]
@@ -136,14 +108,21 @@ async def stream_committee_parallel(
         """运行单个委员分析"""
         committee_id = committee_ids[index]
         name = committee_names[index]
-        temp = temperatures[index] if index < len(temperatures) else temperatures[-1]
+
+        # 获取该委员的独立配置
+        role_config = get_committee_config(committee_id)
+        provider = role_config["provider"]
+        model = role_config["model"]
+        temperature = role_config["temperature"]
+        max_tokens = role_config.get("max_tokens")
 
         content = ""
         try:
             async for chunk in stream_ai_call(
-                prompt, api_key,
+                prompt,
+                provider=provider,
                 model=model,
-                temperature=temp,
+                temperature=temperature,
                 max_tokens=max_tokens,
             ):
                 content += chunk
@@ -256,12 +235,6 @@ async def stream_analyze_symbol(
 
         # 三委员并行模式
         prompt = build_analysis_prompt(chanlun_data, independent=True)
-        temperatures = config.get("committee_temperatures", [0.4, 0.6, 0.7])
-        committee_model = config.get("committee_model", "deepseek-chat")
-        committee_max_tokens = config.get("committee_max_tokens")
-        judge_model = config.get("judge_model", "deepseek-reasoner")
-        judge_temperature = config.get("judge_temperature", 0.3)
-        judge_max_tokens = config.get("judge_max_tokens")
 
         # 初始化三个委员的状态
         committee_contents = {"committee_a": "", "committee_b": "", "committee_c": ""}
@@ -277,13 +250,10 @@ async def stream_analyze_symbol(
         # 创建队列用于接收并行输出
         queue = asyncio.Queue()
 
-        # 启动并行分析任务
+        # 启动并行分析任务（使用新的多Provider配置）
         analysis_task = asyncio.create_task(
             stream_committee_parallel(
-                prompt, api_key,
-                temperatures,
-                committee_model,
-                committee_max_tokens,
+                prompt,
                 queue,
             )
         )
@@ -334,20 +304,22 @@ async def stream_analyze_symbol(
             analyses.append(analyses[0] if analyses else "")
 
         # 裁决官分析
+        judge_config = get_committee_config("judge")
         yield format_sse_event({
             "stage": "judge",
-            "message": "裁决官综合分析中...",
+            "message": f"裁决官分析中 ({judge_config['provider']}/{judge_config['model']})...",
             "progress": 0.75,
         })
 
-        judge_prompt = build_judge_prompt(*analyses[:3])
+        judge_prompt = build_judge_prompt(*analyses[:3], position=position_dict)
         judge_content = ""
 
         async for chunk in stream_ai_call(
-            judge_prompt, api_key,
-            model=judge_model,
-            temperature=judge_temperature,
-            max_tokens=judge_max_tokens,
+            judge_prompt,
+            provider=judge_config["provider"],
+            model=judge_config["model"],
+            temperature=judge_config["temperature"],
+            max_tokens=judge_config.get("max_tokens"),
         ):
             judge_content += chunk
             yield format_sse_event({
