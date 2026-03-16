@@ -3,11 +3,18 @@
 """
 
 # ============================================
-# DeepSeek API（用于 AI 分析）
+# AI Provider 配置（支持多AI服务提供商）
 # ============================================
+# 可选值: "deepseek", "siliconflow"
+# 设置默认使用的Provider
+DEFAULT_AI_PROVIDER = "deepseek"
+
+# DeepSeek API配置
 # 获取密钥: https://platform.deepseek.com/
-# 留空则只输出缠论数据，不进行 AI 分析
 DEEPSEEK_API_KEY = "your-api-key-here"
+# 硅基流动 API配置
+# 获取密钥: https://cloud.siliconflow.cn/
+SILICONFLOW_API_KEY = ""  # 留空表示不使用
 
 # ============================================
 # 代理设置（可选）
@@ -82,7 +89,8 @@ MIN_SYSTEM_SCORE = 6.5  # 最低系统评分阈值
 # 提供：风险提醒、结构演化路径、情景分析
 COGNITIVE_AI_CONFIG = {
     "enabled": True,                 # 是否启用AI认知增强
-    "model": "deepseek-reasoner",    # 使用的模型
+    "provider": DEFAULT_AI_PROVIDER,  # 使用哪个Provider
+    "model": None,                    # None表示使用Provider默认模型
     "timeout": 120,                  # API超时时间（秒）
     "max_retries": 3,                # 最大重试次数
 }
@@ -91,20 +99,46 @@ COGNITIVE_AI_CONFIG = {
 # 三委员机制配置（AI策略引擎）
 # ============================================
 # 三委员 + 裁决官的多轮推理机制
-# 委员：独立分析，各自使用不同温度以增加多样性
-# 裁决官：基于三份报告进行二级推理，temperature=0.3（稳定性）
+# 每个角色可以独立选择Provider和模型
+# 巔员：独立分析，各自使用不同温度以增加多样性
+# 裁决官：基于三份报告进行二级推理
 # 核心约束：裁决官不看原始市场数据，只看三份报告
 COMMITTEE_CONFIG = {
     "enabled": True,                    # 是否启用三委员机制
     "committee_count": 3,               # 委员数量
-    # 每个委员独立设置温度（温度越高越随机/创意，越低越稳定/保守）
-    "committee_temperatures": [0.4, 0.7, 0.8],  # 委员A保守, B中性, C激进
-    "judge_temperature": 0.3,           # 裁决官温度（稳定性）
-    "committee_model": "deepseek-chat", # 委员使用的模型（快速）
-    "judge_model": "deepseek-reasoner", # 裁决官使用的模型（深度）
-    "committee_max_tokens": 2000,       # 委员最大输出 tokens（详细分析）
-    "judge_max_tokens": 2000,           # 裁决官最大输出 tokens（简洁结论）
     "parallel": True,                   # 是否并行调用委员
     "timeout": 120,                     # 单次调用超时（秒）
     "fallback_on_failure": True,        # 委员失败时是否降级到单次调用
+
+    # ----------------------------------------
+    # 寏个角色独立配置（支持跨Provider）
+    # ----------------------------------------
+    # 委员A配置
+    "committee_a": {
+        "provider": "siliconflow",                   # 可选: deepseek, siliconflow
+        "model": "Qwen/Qwen2.5-72B-Instruct",        # 硅基流动的Qwen模型
+        "temperature": 0.4,                         # 保守
+        "max_tokens": 2000,
+    },
+    # 委员B配置
+    "committee_b": {
+        "provider": "deepseek",                     # DeepSeek官方API
+        "model": "deepseek-chat",                   # DeepSeek对话模型
+        "temperature": 0.7,                         # 中性
+        "max_tokens": 2000,
+    },
+    # 委员C配置
+    "committee_c": {
+        "provider": "siliconflow",                   # 硅基流动
+        "model": "deepseek-ai/DeepSeek-V3",          # 硅基流动上的DeepSeek
+        "temperature": 0.8,                         # 激进
+        "max_tokens": 2000,
+    },
+    # 裁决官配置
+    "judge": {
+        "provider": "deepseek",                     # DeepSeek官方API
+        "model": "deepseek-reasoner",               # DeepSeek推理模型
+        "temperature": 0.3,                         # 稳定性
+        "max_tokens": 2000,
+    },
 }
