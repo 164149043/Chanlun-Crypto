@@ -15,8 +15,9 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
-# 导入并导出 FastAPI 应用
+# 导入 FastAPI 应用
 from web_backend.main import app
 
-# Vercel 要求的入口点
-handler = app
+# 使用 Mangum 包装 FastAPI 应用为 Vercel 兼容的 ASGI 应用
+from mangum import Mangum
+handler = Mangum(app)
