@@ -139,24 +139,25 @@ COMMITTEE_CONFIG = {
     # 委员A配置
     "committee_a": {
         "provider": "siliconflow",                   # 可选: deepseek, siliconflow
-        "model": "Qwen/Qwen3-30B-A3B-Thinking-2507",        # 硅基流动的Qwen模型
+    #   "model": "Qwen/Qwen3-30B-A3B-Thinking-2507", 
+        "model": "gemini-3.1-flash-lite-preview",        # 硅基流动的Qwen模型
         "temperature": 0.4,                         # 保守
-        "max_tokens": 2000,
+        "max_tokens": 2200,
     },
     # 委员B配置
     "committee_b": {
         "provider": "gemini",                     # Gemini官方API
         #"model": "ascend-tribe/pangu-pro-moe",
-        "model": "gemini-3-flash-preview",                    # 硅基流动对话模型
+        "model": "gemini-3-flash-preview",         # 硅基流动对话模型
         "temperature": 0.5,                         # 中性
-        "max_tokens": 2000,
+        "max_tokens": 2200,
     },
     # 委员C配置
     "committee_c": {
         "provider": "siliconflow",                   # 硅基流动
         "model": "Pro/deepseek-ai/DeepSeek-V3.2",          # 硅基流动上的DeepSeek
         "temperature": 0.7,                         # 激进
-        "max_tokens": 2000,
+        "max_tokens": 2200,
     },
     # 裁决官配置
     "judge": {
