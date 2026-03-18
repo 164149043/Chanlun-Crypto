@@ -280,7 +280,7 @@ def build_analysis_prompt(data: Dict[str, Any], independent: bool = False) -> st
 
 请基于以下缠论数据，给出交易策略。
 {position_context}
-你的分析应包含：方向判断、关键价位、风险点等，要求800字以内。
+你的分析应包含：方向判断、关键价位、风险点等，要求900字以内。
 {extra}
 多周期数据：
 ```json
@@ -314,7 +314,7 @@ def build_judge_prompt(a: str, b: str, c: str, position: Dict = None) -> str:
 【分析C】
 {c}
 
-请基于这三份报告进行综合判断，给出交易策略，500字以内。
+请基于这三份报告进行综合判断，给出交易策略，600字以内。
 
 重要：
 你不能重新分析市场原始数据，
