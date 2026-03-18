@@ -4,6 +4,7 @@ AI Provider 配置模块 - 支持多AI服务提供商
 支持的Provider:
 - DeepSeek: 官方DeepSeek API
 - SiliconFlow: 硅基流动（支持Qwen、DeepSeek、GLM、Llama等多种模型）
+- Gemini: Google Gemini API（支持 gemini-2.5-flash、gemini-2.5-pro 等）
 """
 
 from dataclasses import dataclass, field
@@ -30,6 +31,7 @@ class ProviderType(Enum):
     """AI服务提供商类型"""
     DEEPSEEK = "deepseek"
     SILICONFLOW = "siliconflow"
+    GEMINI = "gemini"
 
 
 @dataclass
@@ -90,6 +92,24 @@ PROVIDER_TEMPLATES: Dict[str, ProviderConfig] = {
             "meta-llama/Meta-Llama-3.1-70B-Instruct",
             # 其他
             "Pro/Qwen/Qwen2.5-72B-Instruct",
+        ],
+    ),
+
+    "gemini": ProviderConfig(
+        name="Google Gemini",
+        provider_type=ProviderType.GEMINI,
+        base_url="https://generativelanguage.googleapis.com/v1beta",
+        default_model="gemini-3.1-flash",
+        api_key_env="GEMINI_API_KEY",
+        supports_streaming=True,
+        supports_reasoning=True,  # gemini-3.1-ultra 支持深度推理
+        models=[
+            "gemini-3.1-ultra",      # 顶级任务、超长上下文、极高精度（策略核心）
+            "gemini-3.1-flash",      # 极致响应速度、高性价比（实时预警）
+            "gemini-3.0-pro",        # 复杂逻辑推理、多模态分析（复杂数据处理）
+            "gemini-3.0-flash",      # 均衡型模型
+            "gemini-2.5-pro",        # 稳定的存量业务
+            "gemini-2.5-flash",      # 基础分析任务
         ],
     ),
 }
