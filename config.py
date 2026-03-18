@@ -147,7 +147,7 @@ COMMITTEE_CONFIG = {
     "committee_b": {
         "provider": "gemini",                     # Gemini官方API
         #"model": "ascend-tribe/pangu-pro-moe",
-        "model": "gemini-3.0-pro",                    # 硅基流动对话模型
+        "model": "Gemini-3-Flash",                    # 硅基流动对话模型
         "temperature": 0.5,                         # 中性
         "max_tokens": 2000,
     },
@@ -161,7 +161,7 @@ COMMITTEE_CONFIG = {
     # 裁决官配置
     "judge": {
         "provider": "gemini",                     # Gemini官方API
-        "model": "gemini-3.1-ultra",               # Gemini推理模型
+        "model": "gemini-3.1-pro",               # Gemini推理模型
         "temperature": 0.3,                         # 稳定性
         "max_tokens": 2000,
     },
