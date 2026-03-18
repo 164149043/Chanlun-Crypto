@@ -25,6 +25,7 @@ import requests
 from config import (
     DEEPSEEK_API_KEY,
     SILICONFLOW_API_KEY,
+    GEMINI_API_KEY,
     PROXY_URL,
     COMMITTEE_CONFIG,
     DEFAULT_AI_PROVIDER,
@@ -330,6 +331,8 @@ def get_api_key(provider: str) -> str:
         return DEEPSEEK_API_KEY
     elif provider == "siliconflow":
         return SILICONFLOW_API_KEY
+    elif provider == "gemini":
+        return GEMINI_API_KEY
     else:
         return DEEPSEEK_API_KEY  # 默认使用DeepSeek
 def get_default_model(provider: str) -> str:
