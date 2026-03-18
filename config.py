@@ -145,10 +145,10 @@ COMMITTEE_CONFIG = {
     },
     # 委员B配置
     "committee_b": {
-        "provider": "siliconflow",                     # 硅基流动API
+        "provider": "gemini",                     # Gemini官方API
         #"model": "ascend-tribe/pangu-pro-moe",
         "model": "gemini-3.0-pro",                    # 硅基流动对话模型
-        "temperature": 0.6,                         # 中性
+        "temperature": 0.5,                         # 中性
         "max_tokens": 2000,
     },
     # 委员C配置
