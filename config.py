@@ -23,6 +23,12 @@ DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY", "")
 # Vercel部署: 在 Vercel Dashboard → Settings → Environment Variables 中设置
 SILICONFLOW_API_KEY = os.environ.get("SILICONFLOW_API_KEY", "")
 
+# Google Gemini API配置
+# 获取密钥: https://aistudio.google.com/apikey
+# 本地开发: 在 config.local.py 中设置，或设置环境变量 GEMINI_API_KEY
+# Vercel部署: 在 Vercel Dashboard → Settings → Environment Variables 中设置
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
+
 # ============================================
 # 代理设置（可选）
 # ============================================
@@ -140,7 +146,8 @@ COMMITTEE_CONFIG = {
     # 委员B配置
     "committee_b": {
         "provider": "siliconflow",                     # 硅基流动API
-        "model": "ascend-tribe/pangu-pro-moe",                   # 硅基流动对话模型
+        #"model": "ascend-tribe/pangu-pro-moe",
+        "model": "gemini-3.0-pro",                    # 硅基流动对话模型
         "temperature": 0.6,                         # 中性
         "max_tokens": 2000,
     },
@@ -153,8 +160,8 @@ COMMITTEE_CONFIG = {
     },
     # 裁决官配置
     "judge": {
-        "provider": "deepseek",                     # DeepSeek官方API
-        "model": "deepseek-reasoner",               # DeepSeek推理模型
+        "provider": "gemini",                     # Gemini官方API
+        "model": "gemini-3.1-ultra",               # Gemini推理模型
         "temperature": 0.3,                         # 稳定性
         "max_tokens": 2000,
     },
