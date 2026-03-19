@@ -138,7 +138,7 @@ COMMITTEE_CONFIG = {
     # ----------------------------------------
     # 委员A配置
     "committee_a": {
-        "provider": "siliconflow",                   # 可选: deepseek, siliconflow
+        "provider": "gemini",                   # 可选: deepseek, siliconflow
     #   "model": "Qwen/Qwen3-30B-A3B-Thinking-2507", 
         "model": "gemini-3.1-flash-lite-preview",        # 硅基流动的Qwen模型
         "temperature": 0.4,                         # 保守
