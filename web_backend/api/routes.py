@@ -5,12 +5,13 @@ API 路由 - REST API 和 SSE 端点
 import logging
 from typing import List
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from fastapi.responses import StreamingResponse
 
 from web_backend.models.schemas import KlineData, AnalysisRequest
 from web_backend.models.schemas import Symbol
 from web_backend.api.sse import stream_analyze_symbol
+from web_backend.auth.dependencies import get_current_user
 
 logger = logging.getLogger(__name__)
 
@@ -115,9 +116,9 @@ async def get_kline(
 
 
 @router.post("/analyze/stream")
-async def analyze_stream(request: AnalysisRequest):
+async def analyze_stream(request: AnalysisRequest, _user: str = Depends(get_current_user)):
     """
-    SSE 流式分析接口
+    SSE 流式分析接口 (需要认证)
 
     返回 Server-Sent Events 流，每个事件包含分析进度和内容
 

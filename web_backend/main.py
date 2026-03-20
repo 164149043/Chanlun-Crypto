@@ -17,6 +17,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from web_backend.api.routes import router as api_router
+from web_backend.auth.routes import router as auth_router
 
 # 日志配置
 logging.basicConfig(
@@ -42,7 +43,8 @@ app.add_middleware(
 )
 
 # 注册路由
-app.include_router(api_router, prefix="/api")
+app.include_router(auth_router, prefix="/api")  # 认证路由
+app.include_router(api_router, prefix="/api")   # 业务路由
 
 
 @app.get("/")
