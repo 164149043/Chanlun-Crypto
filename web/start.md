@@ -37,3 +37,4 @@ npm run dev
 - 三委员分析 + 裁决官结论
 - 打字机效果输出
 - 实时进度显示
+python -c "import secrets; print(secrets.token_urlsafe(48))"

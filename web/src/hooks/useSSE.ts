@@ -4,6 +4,7 @@
 
 import { useCallback, useRef } from 'react';
 import { useAnalysisStore } from '../stores/analysisStore';
+import { useAuthStore } from '../stores/authStore';
 import type { SSEEvent, PositionInfo } from '../types/api';
 
 // 生产环境(Vercel): VITE_API_BASE 为空字符串，使用相对路径
@@ -44,10 +45,16 @@ export function useSSE() {
       };
     }
 
+    // 获取认证 token
+    const token = useAuthStore.getState().token;
+
     try {
       const response = await fetch(`${API_BASE}/api/analyze/stream`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify(requestBody),
         signal: abortControllerRef.current.signal,
       });

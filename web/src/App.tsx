@@ -16,6 +16,7 @@ import { JudgeCard } from './components/analysis/JudgeCard';
 import { Sidebar } from './components/layout/Sidebar';
 import { PositionInput } from './components/analysis/PositionInput';
 import { ChartPage } from './components/chart/ChartPage';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
 
 // Store
 import { useAnalysisStore } from './stores/analysisStore';
@@ -131,9 +132,10 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-bento-bg">
-      {/* Header */}
-      <header className="sticky top-0 z-50 backdrop-blur-xl bg-white/80 border-b border-gray-100">
+    <ProtectedRoute>
+      <div className="min-h-screen bg-bento-bg">
+        {/* Header */}
+        <header className="sticky top-0 z-50 backdrop-blur-xl bg-white/80 border-b border-gray-100">
         <div className="px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -182,7 +184,8 @@ function App() {
           {renderPageContent()}
         </div>
       </div>
-    </div>
+      </div>
+    </ProtectedRoute>
   );
 }
 
