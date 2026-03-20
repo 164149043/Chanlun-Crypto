@@ -11,7 +11,7 @@ from pydantic import BaseModel
 # ============================================
 
 # 交易对类型
-Symbol = Literal["BTCUSDT", "ETHUSDT"]
+Symbol = Literal["BTCUSDT", "ETHUSDT", "BNBUSDT", "SOLUSDT", "DOGEUSDT", "XRPUSDT"]
 
 # 持仓类型
 PositionType = Literal["LONG", "SHORT", "NONE"]

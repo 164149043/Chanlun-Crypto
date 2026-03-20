@@ -21,7 +21,7 @@ router = APIRouter()
 # 常量配置
 # ============================================
 
-SUPPORTED_SYMBOLS = ["BTCUSDT", "ETHUSDT"]
+SUPPORTED_SYMBOLS = ["BTCUSDT", "ETHUSDT", "BNBUSDT", "SOLUSDT", "DOGEUSDT", "XRPUSDT"]
 
 
 # ============================================

@@ -16,6 +16,10 @@ interface SymbolSelectorProps {
 const SYMBOLS: { value: Symbol; label: string }[] = [
   { value: 'BTCUSDT', label: 'BTC/USDT' },
   { value: 'ETHUSDT', label: 'ETH/USDT' },
+  { value: 'BNBUSDT', label: 'BNB/USDT' },
+  { value: 'SOLUSDT', label: 'SOL/USDT' },
+  { value: 'DOGEUSDT', label: 'DOGE/USDT' },
+  { value: 'XRPUSDT', label: 'XRP/USDT' },
 ];
 
 export function SymbolSelector({

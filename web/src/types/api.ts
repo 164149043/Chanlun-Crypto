@@ -2,7 +2,7 @@
  * API 类型定义
  */
 
-export type Symbol = "BTCUSDT" | "ETHUSDT";
+export type Symbol = "BTCUSDT" | "ETHUSDT" | "BNBUSDT" | "SOLUSDT" | "DOGEUSDT" | "XRPUSDT";
 
 export interface KlineData {
   time: number;

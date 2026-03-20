@@ -49,8 +49,8 @@ except ImportError:
 # ============================================
 # 交易对选择
 # ============================================
-# 只支持 BTCUSDT 和 ETHUSDT
-SYMBOLS = ["BTCUSDT", "ETHUSDT"]
+# 支持的交易对列表
+SYMBOLS = ["BTCUSDT", "ETHUSDT", "BNBUSDT", "SOLUSDT", "DOGEUSDT", "XRPUSDT"]
 
 # 周期名称
 PERIOD_NAMES = {
