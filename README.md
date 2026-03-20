@@ -28,6 +28,8 @@
 - **TradingView K线图表**：集成专业级 K 线图表
 - 打字机效果：AI 分析结果逐字显示
 - 响应式设计，支持桌面/平板/手机
+- **动画登录页面**：可爱的卡通角色眼球追踪动画，增强用户体验
+- **JWT 认证**：基于 Token 的身份验证，支持持久化登录状态
 
 ### 数据源
 - 币安永续合约（BinanceAPI）
@@ -114,8 +116,13 @@ Chanlun-Crypto/
 │       ├── api/
 │       │   ├── routes.py           # API 路由
 │       │   └── sse.py              # SSE 流式响应
+│       ├── auth/                   # 认证模块
+│       │   ├── config.py           # 认证配置（账号密码、JWT 密钥）
+│       │   ├── jwt.py              # JWT Token 生成/验证
+│       │   └── routes.py           # 认证路由（登录/验证）
 │       ├── models/
-│       │   └── schemas.py          # 数据模型
+│       │   ├── schemas.py          # 数据模型
+│       │   └── auth_schemas.py     # 认证数据模型
 │       └── main.py                 # FastAPI 入口
 │
 ├── 📁 Web 前端
@@ -130,18 +137,31 @@ Chanlun-Crypto/
 │       │   │   │   ├── PositionInput.tsx   # 持仓输入
 │       │   │   │   ├── AnalyzeButton.tsx   # 分析按钮
 │       │   │   │   └── TypewriterText.tsx  # 打字机效果
+│       │   │   ├── auth/           # 认证组件
+│       │   │   │   ├── AnimatedLoginPage.tsx  # 动画登录页面
+│       │   │   │   └── ProtectedRoute.tsx     # 路由保护
 │       │   │   ├── chart/          # 图表组件
 │       │   │   │   ├── ChartPage.tsx       # K线图表页面
 │       │   │   │   └── KLineChart.tsx      # K线图表组件
 │       │   │   ├── layout/         # 布局组件
 │       │   │   │   ├── BentoGrid.tsx       # Bento Grid 布局
 │       │   │   │   └── Sidebar.tsx         # 左侧任务栏
-│       │   │   └── ui/             # UI 组件
+│       │   │   └── ui/             # UI 组件（shadcn/ui）
+│       │   │       ├── button.tsx          # 按钮
+│       │   │       ├── input.tsx           # 输入框
+│       │   │       ├── label.tsx           # 标签
 │       │   │       └── TemperatureSlider.tsx  # 温度滑块
 │       │   ├── hooks/
 │       │   │   └── useSSE.ts       # SSE Hook
+│       │   ├── lib/
+│       │   │   └── utils.ts        # 工具函数（cn）
+│       │   ├── services/
+│       │   │   └── authService.ts  # 认证 API 服务
 │       │   ├── stores/
-│       │   │   └── analysisStore.ts # Zustand 状态管理
+│       │   │   ├── analysisStore.ts # 分析状态管理
+│       │   │   └── authStore.ts     # 认证状态管理
+│       │   ├── types/
+│       │   │   └── auth.ts          # 认证类型定义
 │       │   └── App.tsx             # 主应用
 │       ├── index.html
 │       └── package.json
@@ -245,6 +265,35 @@ COMMITTEE_CONFIG = {
 | SOLUSDT | Solana | 索拉纳 |
 | DOGEUSDT | Dogecoin | 狗狗币 |
 | XRPUSDT | Ripple | 瑞波币 |
+
+### 认证配置
+
+后端认证配置在 `web_backend/auth/config.py`：
+
+```python
+# 账号配置（通过环境变量设置）
+AUTH_USERNAME = os.getenv("AUTH_USERNAME", "admin")
+AUTH_PASSWORD = os.getenv("AUTH_PASSWORD", "chanlun2024")
+
+# JWT 配置
+JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "chanlun-crypto-secret-key-change-in-production")
+JWT_EXPIRE_HOURS = 24  # Token 有效期 24 小时
+```
+
+**生产环境配置（Vercel）：**
+
+在 Vercel Dashboard → Settings → Environment Variables 中设置：
+
+| 变量名 | 说明 | 示例 |
+|--------|------|------|
+| `AUTH_USERNAME` | 登录用户名 | `admin` |
+| `AUTH_PASSWORD` | 登录密码 | `your-password` |
+| `JWT_SECRET_KEY` | JWT 密钥（建议 64 位随机字符串） | `Xk9mN2pL4qR7sT1uV3wY...` |
+
+**生成随机密钥：**
+```bash
+python -c "import secrets; print(secrets.token_urlsafe(48))"
+```
 
 ### 前端配置
 
@@ -436,6 +485,9 @@ bs_list = kl.bs_point_lst   # 买卖点列表
 - Framer Motion
 - Zustand
 - Lightweight Charts
+- Radix UI（@radix-ui/react-checkbox, @radix-ui/react-label, @radix-ui/react-slot）
+- Lucide React（图标库）
+- class-variance-authority, clsx, tailwind-merge（样式工具）
 - （其他依赖见 `web/package.json`）
 
 ---
