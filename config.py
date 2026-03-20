@@ -155,7 +155,7 @@ COMMITTEE_CONFIG = {
     # 委员C配置
     "committee_c": {
         "provider": "deepseek",                   # 硅基流动
-        "model": "deepseek-reasoner",          # 硅基流动上的DeepSeek
+        "model": "deepseek-chat",          # 硅基流动上的DeepSeek
         "temperature": 0.7,                         # 激进
         "max_tokens": 2200,
     },
