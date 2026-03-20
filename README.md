@@ -13,7 +13,7 @@
 
 ### AI 策略引擎
 - 多周期缠论数据自动采集（D1/H4/H1/M15）
-- **多 Provider 支持**：DeepSeek、SiliconFlow（硅基流动），可灵活切换
+- **多 Provider 支持**：DeepSeek、SiliconFlow（硅基流动）、Google Gemini，可灵活切换
 - **三委员 + 裁决官机制**：多角度独立分析，综合决策
 - **独立角色配置**：每个委员/裁决官可独立选择 Provider、模型、温度
 - **温度参数控制**：每个委员/裁决官可调节温度（0.1-1.0）
@@ -174,13 +174,16 @@ cp config.example.py config.py
 
 ```python
 # AI Provider 配置（支持多AI服务提供商）
-DEFAULT_AI_PROVIDER = "deepseek"  # 可选: "deepseek", "siliconflow"
+DEFAULT_AI_PROVIDER = "deepseek"  # 可选: "deepseek", "siliconflow", "gemini"
 
 # DeepSeek API（获取密钥: https://platform.deepseek.com/）
 DEEPSEEK_API_KEY = "your-api-key"
 
 # 硅基流动 API（获取密钥: https://cloud.siliconflow.cn/）
 SILICONFLOW_API_KEY = ""  # 留空表示不使用
+
+# Google Gemini API（获取密钥: https://aistudio.google.com/apikey）
+GEMINI_API_KEY = ""  # 留空表示不使用
 
 # 代理（可选）
 PROXY_URL = "http://127.0.0.1:7890"
@@ -230,6 +233,18 @@ COMMITTEE_CONFIG = {
 |----------|------|----------|
 | DeepSeek | 官方 DeepSeek API | deepseek-chat, deepseek-reasoner |
 | SiliconFlow | 硅基流动（支持多种开源模型） | Qwen/Qwen2.5-72B-Instruct, deepseek-ai/DeepSeek-V3 |
+| Google Gemini | Google 官方 Gemini API | gemini-2.5-flash, gemini-2.5-pro |
+
+### 支持的交易对
+
+| 交易对 | 币种 | 说明 |
+|--------|------|------|
+| BTCUSDT | Bitcoin | 比特币 |
+| ETHUSDT | Ethereum | 以太坊 |
+| BNBUSDT | BNB | 币安币 |
+| SOLUSDT | Solana | 索拉纳 |
+| DOGEUSDT | Dogecoin | 狗狗币 |
+| XRPUSDT | Ripple | 瑞波币 |
 
 ### 前端配置
 
