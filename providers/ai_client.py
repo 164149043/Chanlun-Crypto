@@ -287,16 +287,14 @@ class AIClient:
 
             client = genai.Client(api_key=self.api_key)
 
-            # 使用同步流式调用，然后在异步生成器中返回
-            response = client.models.generate_content_stream(
+            # 使用异步流式调用（aio 属性）
+            async for chunk in await client.aio.models.generate_content_stream(
                 model=model_name,
                 contents=full_prompt,
                 config={
                     "temperature": temperature,
                 }
-            )
-
-            for chunk in response:
+            ):
                 if chunk.text:
                     yield chunk.text
 
