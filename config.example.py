@@ -5,16 +5,21 @@
 # ============================================
 # AI Provider 配置（支持多AI服务提供商）
 # ============================================
-# 可选值: "deepseek", "siliconflow"
+# 可选值: "deepseek", "siliconflow", "gemini"
 # 设置默认使用的Provider
 DEFAULT_AI_PROVIDER = "deepseek"
 
 # DeepSeek API配置
 # 获取密钥: https://platform.deepseek.com/
 DEEPSEEK_API_KEY = "your-api-key-here"
+
 # 硅基流动 API配置
 # 获取密钥: https://cloud.siliconflow.cn/
 SILICONFLOW_API_KEY = ""  # 留空表示不使用
+
+# Google Gemini API配置
+# 获取密钥: https://aistudio.google.com/apikey
+GEMINI_API_KEY = ""  # 留空表示不使用
 
 # ============================================
 # 代理设置（可选）
@@ -26,8 +31,8 @@ PROXY_URL = ""  # 留空 = 不使用代理
 # ============================================
 # 交易对选择
 # ============================================
-# 只支持 BTCUSDT 和 ETHUSDT
-SYMBOLS = ["BTCUSDT", "ETHUSDT"]
+# 支持的交易对列表
+SYMBOLS = ["BTCUSDT", "ETHUSDT", "BNBUSDT", "SOLUSDT", "DOGEUSDT", "XRPUSDT"]
 
 # 周期名称
 PERIOD_NAMES = {
@@ -111,34 +116,34 @@ COMMITTEE_CONFIG = {
     "fallback_on_failure": True,        # 委员失败时是否降级到单次调用
 
     # ----------------------------------------
-    # 寏个角色独立配置（支持跨Provider）
+    # 各个角色独立配置（支持跨Provider）
     # ----------------------------------------
     # 委员A配置
     "committee_a": {
-        "provider": "siliconflow",                   # 可选: deepseek, siliconflow
-        "model": "Qwen/Qwen2.5-72B-Instruct",        # 硅基流动的Qwen模型
-        "temperature": 0.4,                         # 保守
+        "provider": "deepseek",                   # 可选: deepseek, siliconflow, gemini
+        "model": "deepseek-chat",                 # DeepSeek对话模型
+        "temperature": 0.4,                       # 保守
         "max_tokens": 2000,
     },
     # 委员B配置
     "committee_b": {
-        "provider": "deepseek",                     # DeepSeek官方API
-        "model": "deepseek-chat",                   # DeepSeek对话模型
-        "temperature": 0.7,                         # 中性
-        "max_tokens": 2000,
+        "provider": "gemini",                     # Gemini官方API
+        "model": "gemini-3-flash-preview",        # Gemini快速模型
+        "temperature": 0.5,                       # 中性
+        "max_tokens": 2200,
     },
     # 委员C配置
     "committee_c": {
-        "provider": "siliconflow",                   # 硅基流动
-        "model": "deepseek-ai/DeepSeek-V3",          # 硅基流动上的DeepSeek
-        "temperature": 0.8,                         # 激进
-        "max_tokens": 2000,
+        "provider": "gemini",                     # Gemini官方API
+        "model": "gemini-3.1-flash-lite-preview", # Gemini轻量模型
+        "temperature": 0.7,                       # 激进
+        "max_tokens": 2200,
     },
     # 裁决官配置
     "judge": {
-        "provider": "deepseek",                     # DeepSeek官方API
-        "model": "deepseek-reasoner",               # DeepSeek推理模型
-        "temperature": 0.3,                         # 稳定性
+        "provider": "gemini",                     # Gemini官方API
+        "model": "gemini-3.1-pro-preview",        # Gemini推理模型
+        "temperature": 0.3,                       # 稳定性
         "max_tokens": 2000,
     },
 }
