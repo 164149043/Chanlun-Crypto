@@ -157,7 +157,7 @@ COMMITTEE_CONFIG = {
         "provider": "deepseek",                   # 硅基流动
         "model": "deepseek-chat",          # 硅基流动上的DeepSeek
         "temperature": 0.7,                         # 激进
-        "max_tokens": 2200,
+        "max_tokens": 2000,
     },
     # 裁决官配置
     "judge": {
