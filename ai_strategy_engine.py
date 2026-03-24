@@ -419,6 +419,7 @@ def call_ai(
     if not model:
         model = get_default_model(provider)
     # 使用统一AI客户端调用
+    # 注意：prompt 已包含完整提示词，传空 system_prompt 避免重复
     return provider_call_ai(
         prompt=prompt,
         provider=provider,
@@ -426,6 +427,7 @@ def call_ai(
         model=model,
         temperature=temperature,
         max_tokens=max_tokens,
+        system_prompt="",  # 避免与 prompt 中的角色定义重复
     )
 
 
