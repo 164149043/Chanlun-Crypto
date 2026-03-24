@@ -7,7 +7,7 @@ import os
 # ============================================
 # AI Provider 配置（支持多AI服务提供商）
 # ============================================
-# 可选值: "deepseek", "siliconflow"
+# 可选值: "deepseek", "siliconflow", "gemini"
 # 设置默认使用的Provider
 DEFAULT_AI_PROVIDER = "deepseek"
 
@@ -138,31 +138,30 @@ COMMITTEE_CONFIG = {
     # ----------------------------------------
     # 委员A配置
     "committee_a": {
-        "provider": "deepseek",                   # 可选: deepseek, siliconflow
-    #   "model": "Qwen/Qwen3-30B-A3B-Thinking-2507", 
-        "model": "deepseek-chat",        # 硅基流动的Qwen模型
-        "temperature": 0.4,                         # 保守
+        "provider": "deepseek",                   # 可选: deepseek, siliconflow, gemini
+    #   "model": "Qwen/Qwen3-30B-A3B-Thinking-2507",
+        "model": "deepseek-chat",                  # DeepSeek对话模型
+        "temperature": 0.4,                        # 保守
         "max_tokens": 2000,
     },
     # 委员B配置
     "committee_b": {
         "provider": "gemini",                     # Gemini官方API
-        #"model": "ascend-tribe/pangu-pro-moe",
-        "model": "gemini-3-flash-preview",         # 硅基流动对话模型
+        "model": "gemini-3-flash-preview",              # Gemini快速模型
         "temperature": 0.5,                         # 中性
         "max_tokens": 2200,
     },
     # 委员C配置
     "committee_c": {
-        "provider": "gemini",                   # 硅基流动
-        "model": "gemini-3.1-flash-lite-preview",          # 硅基流动上的DeepSeek
+        "provider": "gemini",                   # Gemini官方API
+        "model": "gemini-3.1-flash-lite-preview",          # Gemini轻量模型
         "temperature": 0.7,                         # 激进
         "max_tokens": 2200,
     },
     # 裁决官配置
     "judge": {
         "provider": "gemini",                     # Gemini官方API
-        "model": "gemini-3.1-pro-preview",               # Gemini推理模型
+        "model": "gemini-3.1-pro-preview",                # Gemini推理模型
         "temperature": 0.3,                         # 稳定性
         "max_tokens": 2000,
     },
