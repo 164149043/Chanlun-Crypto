@@ -1,11 +1,12 @@
 /**
  * 裁决官卡片组件 - 展示裁决官的综合结论
- * 浅色主题 + 温度滑块
+ * 浅色主题 + 温度滑块 + 打字机效果
  */
 
 import { motion } from 'framer-motion';
 import { Scale, Crown } from 'lucide-react';
 import { TemperatureSlider } from '../ui/TemperatureSlider';
+import { TypewriterText } from './TypewriterText';
 import { useAnalysisStore } from '../../stores/analysisStore';
 import type { JudgeOutput } from '../../types/api';
 
@@ -58,19 +59,15 @@ export function JudgeCard({ judge }: JudgeCardProps) {
         />
       </div>
 
-      {/* 内容区 - 自动高度 */}
+      {/* 内容区 - 打字机效果 */}
       <div className="text-sm text-gray-700 leading-relaxed">
         {judge?.content ? (
-          <div className="whitespace-pre-wrap">
-            {judge.content}
-            {judge.isStreaming && (
-              <motion.span
-                animate={{ opacity: [1, 0] }}
-                transition={{ duration: 0.8, repeat: Infinity }}
-                className="inline-block w-1 h-4 ml-0.5 rounded-sm bg-amber-500"
-              />
-            )}
-          </div>
+          <TypewriterText
+            text={judge.content}
+            isStreaming={judge.isStreaming}
+            speed={10}
+            chunkSize={3}
+          />
         ) : (
           <div className="h-full flex flex-col items-center justify-center py-8 text-gray-400">
             <Scale className="w-8 h-8 mb-2 opacity-50" />
