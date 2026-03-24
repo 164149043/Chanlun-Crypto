@@ -99,17 +99,15 @@ PROVIDER_TEMPLATES: Dict[str, ProviderConfig] = {
         name="Google Gemini",
         provider_type=ProviderType.GEMINI,
         base_url="https://generativelanguage.googleapis.com/v1beta",
-        default_model="gemini-3.1-flash",
+        default_model="gemini-3-flash-preview",
         api_key_env="GEMINI_API_KEY",
         supports_streaming=True,
-        supports_reasoning=True,  # gemini-3.1-ultra 支持深度推理
+        supports_reasoning=True,  # gemini-3.1-pro-preview 支持深度推理
         models=[
-            "gemini-3.1-ultra",      # 顶级任务、超长上下文、极高精度（策略核心）
-            "gemini-3.1-flash",      # 极致响应速度、高性价比（实时预警）
-            "gemini-3.0-pro",        # 复杂逻辑推理、多模态分析（复杂数据处理）
-            "gemini-3.0-flash",      # 均衡型模型
-            "gemini-2.5-pro",        # 稳定的存量业务
-            "gemini-2.5-flash",      # 基础分析任务
+            "gemini-3.1-pro-preview",         # 深度推理、复杂分析
+            "gemini-3.1-flash-lite-preview",  # 轻量版、极速响应
+            "gemini-3-flash-preview",         # 预览版快速模型
+            "gemini-2.5-flash",               # 稳定版快速
         ],
     ),
 }
@@ -120,7 +118,7 @@ def get_provider_config(provider_name: str) -> ProviderConfig:
     获取Provider配置
 
     Args:
-        provider_name: Provider名称 ("deepseek" 或 "siliconflow")
+        provider_name: Provider名称 ("deepseek", "siliconflow", "gemini")
 
     Returns:
         ProviderConfig: Provider配置对象
