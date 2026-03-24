@@ -15,7 +15,6 @@ import concurrent.futures
 import io
 import json
 import logging
-import re
 import sys
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
@@ -29,6 +28,7 @@ from config import (
     PROXY_URL,
     COMMITTEE_CONFIG,
     DEFAULT_AI_PROVIDER,
+    SYMBOLS,
 )
 from Chan import CChan
 from ChanConfig import CChanConfig
@@ -69,21 +69,33 @@ logger = logging.getLogger(__name__)
 # ============================================
 
 def select_symbol() -> List[str]:
-    """选择交易对"""
+    """选择交易对（从配置动态读取）"""
     print("\n选择交易对:")
-    print("  1. BTCUSDT")
-    print("  2. ETHUSDT")
-    print("  3. 全部")
+    for i, symbol in enumerate(SYMBOLS, 1):
+        print(f"  {i}. {symbol}")
+    print(f"  {len(SYMBOLS) + 1}. 全部")
+
     while True:
         try:
-            choice = input("请选择 (1/2/3，回车默认 BTCUSDT): ").strip()
-            if not choice or choice == "1":
-                return ["BTCUSDT"]
-            if choice == "2":
-                return ["ETHUSDT"]
-            if choice == "3":
-                return ["BTCUSDT", "ETHUSDT"]
-            print("请输入 1/2/3")
+            prompt = f"请选择 (1-{len(SYMBOLS) + 1}，回车默认 {SYMBOLS[0]}): "
+            choice = input(prompt).strip()
+
+            # 默认选择第一个
+            if not choice:
+                return [SYMBOLS[0]]
+
+            # 选择"全部"
+            if choice == str(len(SYMBOLS) + 1):
+                return SYMBOLS.copy()
+
+            # 选择单个交易对
+            idx = int(choice) - 1
+            if 0 <= idx < len(SYMBOLS):
+                return [SYMBOLS[idx]]
+
+            print(f"请输入 1-{len(SYMBOLS) + 1}")
+        except ValueError:
+            print("请输入有效数字")
         except KeyboardInterrupt:
             print("\n用户取消")
             sys.exit(0)
@@ -547,34 +559,6 @@ def format_committee_result(analyses: List[str], final_decision: Optional[str]) 
     return "\n".join(lines)
 
 
-# ============================================
-# 输出格式化
-# ============================================
-
-def parse_strategy_json(response_text: str) -> Optional[Dict[str, Any]]:
-    """尝试从响应中解析 JSON"""
-    try:
-        return json.loads(response_text)
-    except json.JSONDecodeError:
-        pass
-
-    # 尝试提取代码块中的 JSON
-    for match in re.findall(r"```(?:json)?\s*([\s\S]*?)\s*```", response_text):
-        try:
-            return json.loads(match)
-        except json.JSONDecodeError:
-            continue
-
-    # 尝试提取花括号内容
-    match = re.search(r"\{[\s\S]*\}", response_text)
-    if match:
-        try:
-            return json.loads(match.group())
-        except json.JSONDecodeError:
-            pass
-    return None
-
-
 def format_strategy(raw_response: str) -> str:
     """格式化策略输出"""
     lines = ["=" * 60, "AI 策略输出", "=" * 60, ""]
@@ -638,6 +622,22 @@ def analyze_symbol(symbol: str, api_key: str, position: Optional[Dict[str, Any]]
         logger.error(f"策略生成失败: {e}")
 
 
+def check_api_keys() -> bool:
+    """检查是否至少配置了一个 Provider 的 API Key"""
+    providers = []
+    if DEEPSEEK_API_KEY:
+        providers.append("DeepSeek")
+    if SILICONFLOW_API_KEY:
+        providers.append("SiliconFlow")
+    if GEMINI_API_KEY:
+        providers.append("Gemini")
+
+    if providers:
+        print(f"可用 Provider: {', '.join(providers)}")
+        return True
+    return False
+
+
 def main() -> None:
     """主入口"""
     print("\n" + "=" * 60)
@@ -645,8 +645,13 @@ def main() -> None:
     print("=" * 60)
     print(f"时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
-    if not DEEPSEEK_API_KEY:
-        print("\n错误: 未配置 DEEPSEEK_API_KEY")
+    # 检查至少有一个 Provider 配置了 API Key
+    if not check_api_keys():
+        print("\n错误: 未配置任何 AI Provider 的 API Key")
+        print("请在 config.py 或环境变量中配置以下至少一项:")
+        print("  - DEEPSEEK_API_KEY")
+        print("  - SILICONFLOW_API_KEY")
+        print("  - GEMINI_API_KEY")
         return
 
     if PROXY_URL:
@@ -658,9 +663,9 @@ def main() -> None:
     # 选择持仓信息
     position = select_position()
 
-    # 分析
+    # 分析（不再传递 api_key，让 run_committee_analysis 自己获取）
     for symbol in symbols:
-        analyze_symbol(symbol, DEEPSEEK_API_KEY, position=position)
+        analyze_symbol(symbol, api_key=None, position=position)
 
     print("\n分析完成")
 
