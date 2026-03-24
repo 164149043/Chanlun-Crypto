@@ -165,7 +165,7 @@ async def stream_analyze_symbol(
     流式分析交易对
 
     Args:
-        symbol: 交易对 (BTCUSDT / ETHUSDT)
+        symbol: 交易对 (BTCUSDT / ETHUSDT / BNBUSDT / SOLUSDT / DOGEUSDT / XRPUSDT)
         api_key: API 密钥（可选，默认使用配置文件中的）
         position: 持仓信息（可选，包含持仓类型和开仓均价）
 
