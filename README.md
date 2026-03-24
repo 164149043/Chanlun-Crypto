@@ -253,7 +253,8 @@ COMMITTEE_CONFIG = {
 |----------|------|----------|
 | DeepSeek | 官方 DeepSeek API | deepseek-chat, deepseek-reasoner |
 | SiliconFlow | 硅基流动（支持多种开源模型） | Qwen/Qwen2.5-72B-Instruct, deepseek-ai/DeepSeek-V3 |
-| Google Gemini | Google 官方 Gemini API | gemini-2.5-flash, gemini-2.5-pro |
+| Google Gemini | Google 官方 Gemini API | 
+gemini-3-flash-preview，gemini-3.1-pro-preview, gemini-3.1-flash-lite-preview |
 
 ### 支持的交易对
 
