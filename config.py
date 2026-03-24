@@ -138,9 +138,9 @@ COMMITTEE_CONFIG = {
     # ----------------------------------------
     # 委员A配置
     "committee_a": {
-        "provider": "gemini",                   # 可选: deepseek, siliconflow
+        "provider": "deepseek",                   # 可选: deepseek, siliconflow
     #   "model": "Qwen/Qwen3-30B-A3B-Thinking-2507", 
-        "model": "gemini-3.1-flash-lite-preview",        # 硅基流动的Qwen模型
+        "model": "deepseek-chat",        # 硅基流动的Qwen模型
         "temperature": 0.4,                         # 保守
         "max_tokens": 2200,
     },
@@ -154,8 +154,8 @@ COMMITTEE_CONFIG = {
     },
     # 委员C配置
     "committee_c": {
-        "provider": "deepseek",                   # 硅基流动
-        "model": "deepseek-chat",          # 硅基流动上的DeepSeek
+        "provider": "gemini",                   # 硅基流动
+        "model": "gemini-3.1-flash-lite-preview",          # 硅基流动上的DeepSeek
         "temperature": 0.7,                         # 激进
         "max_tokens": 2000,
     },
