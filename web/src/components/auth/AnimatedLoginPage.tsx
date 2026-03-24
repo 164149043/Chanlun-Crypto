@@ -299,7 +299,7 @@ export function AnimatedLoginPage() {
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
       {/* 左侧动画区域 */}
-      <div className="relative hidden lg:flex flex-col justify-between bg-gradient-to-br from-primary/90 via-primary to-primary/80 p-12 text-primary-foreground">
+      <div className="relative hidden lg:flex flex-col justify-between bg-gradient-to-br from-[#1a1a1a] via-[#6a6a6a] to-[#1a1a1a] p-12 text-white">
         <div className="relative z-20">
           <div className="flex items-center gap-2 text-lg font-semibold">
             <div className="size-8 rounded-lg bg-primary-foreground/10 backdrop-blur-sm flex items-center justify-center">
