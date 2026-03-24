@@ -88,11 +88,11 @@ export function TypewriterText({
   }, [displayedText, text, isStreaming]);
 
   return (
-    <div className="font-mono text-sm leading-relaxed text-slate-200 whitespace-pre-wrap">
+    <div className="text-sm leading-relaxed text-gray-700 whitespace-pre-wrap">
       {displayedText}
       {isStreaming && (
         <motion.span
-          className="inline-block w-2 h-5 ml-0.5 bg-indigo-400 align-middle"
+          className="inline-block w-2 h-4 ml-0.5 bg-indigo-500 align-middle rounded-sm"
           animate={{ opacity: cursorVisible ? 1 : 0 }}
           transition={{ duration: 0.1 }}
         />
