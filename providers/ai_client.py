@@ -29,7 +29,7 @@ PROVIDER_BASE_URLS = {
 PROVIDER_DEFAULT_MODELS = {
     "deepseek": "deepseek-chat",
     "siliconflow": "Qwen/Qwen2.5-72B-Instruct",
-    "gemini": "gemini-3.1-flash",  # 默认使用快速版，实时预警
+    "gemini": "gemini-3.1-flash-lite-preview",  # 默认使用快速版，实时预警
 }
 
 # 默认系统提示词
@@ -131,7 +131,7 @@ class AIClient:
         """
         # Gemini 使用单独的 SDK
         if self.provider == "gemini":
-            return self._call_gemini(prompt, model, temperature, system_prompt)
+            return self._call_gemini(prompt, model, temperature, max_tokens, system_prompt)
 
         url = get_api_url(self.provider)
         headers = self._build_headers()
@@ -198,6 +198,7 @@ class AIClient:
         prompt: str,
         model: Optional[str] = None,
         temperature: float = 0.6,
+        max_tokens: Optional[int] = None,
         system_prompt: str = DEFAULT_SYSTEM_PROMPT,
     ) -> str:
         """
@@ -207,6 +208,7 @@ class AIClient:
             prompt: 提示词
             model: 模型名称
             temperature: 温度参数
+            max_tokens: 最大输出tokens
             system_prompt: 系统提示词
 
         Returns:
@@ -230,12 +232,15 @@ class AIClient:
 
                 client = genai.Client(api_key=self.api_key)
 
+                # 构建 config
+                config = {"temperature": temperature}
+                if max_tokens:
+                    config["max_output_tokens"] = max_tokens
+
                 response = client.models.generate_content(
                     model=model_name,
                     contents=full_prompt,
-                    config={
-                        "temperature": temperature,
-                    }
+                    config=config,
                 )
 
                 if response.text:
@@ -259,6 +264,7 @@ class AIClient:
         prompt: str,
         model: Optional[str] = None,
         temperature: float = 0.6,
+        max_tokens: Optional[int] = None,
         system_prompt: str = DEFAULT_SYSTEM_PROMPT,
     ) -> AsyncGenerator[str, None]:
         """
@@ -268,6 +274,7 @@ class AIClient:
             prompt: 提示词
             model: 模型名称
             temperature: 温度参数
+            max_tokens: 最大输出tokens
             system_prompt: 系统提示词
 
         Yields:
@@ -287,13 +294,16 @@ class AIClient:
 
             client = genai.Client(api_key=self.api_key)
 
+            # 构建 config
+            config = {"temperature": temperature}
+            if max_tokens:
+                config["max_output_tokens"] = max_tokens
+
             # 使用异步流式调用（aio 属性）
             async for chunk in await client.aio.models.generate_content_stream(
                 model=model_name,
                 contents=full_prompt,
-                config={
-                    "temperature": temperature,
-                }
+                config=config,
             ):
                 if chunk.text:
                     yield chunk.text
@@ -325,7 +335,7 @@ class AIClient:
         """
         # Gemini 流式调用
         if self.provider == "gemini":
-            async for chunk in self._call_gemini_stream(prompt, model, temperature, system_prompt):
+            async for chunk in self._call_gemini_stream(prompt, model, temperature, max_tokens, system_prompt):
                 yield chunk
             return
 
