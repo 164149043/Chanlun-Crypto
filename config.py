@@ -142,7 +142,7 @@ COMMITTEE_CONFIG = {
     #   "model": "Qwen/Qwen3-30B-A3B-Thinking-2507", 
         "model": "deepseek-chat",        # 硅基流动的Qwen模型
         "temperature": 0.4,                         # 保守
-        "max_tokens": 2200,
+        "max_tokens": 2000,
     },
     # 委员B配置
     "committee_b": {
@@ -157,7 +157,7 @@ COMMITTEE_CONFIG = {
         "provider": "gemini",                   # 硅基流动
         "model": "gemini-3.1-flash-lite-preview",          # 硅基流动上的DeepSeek
         "temperature": 0.7,                         # 激进
-        "max_tokens": 2000,
+        "max_tokens": 2200,
     },
     # 裁决官配置
     "judge": {
