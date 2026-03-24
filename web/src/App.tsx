@@ -115,7 +115,11 @@ function App() {
         );
 
       case 'chart':
-        return <ChartPage symbol={symbol} />;
+        return (
+          <div className="flex-1 flex flex-col min-h-[calc(100vh-200px)] lg:min-h-0">
+            <ChartPage symbol={symbol} />
+          </div>
+        );
 
       case 'history':
         return (
