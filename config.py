@@ -142,7 +142,7 @@ COMMITTEE_CONFIG = {
     #   "model": "Qwen/Qwen3-30B-A3B-Thinking-2507",
         "model": "deepseek-chat",                  # DeepSeek对话模型
         "temperature": 0.4,                        # 保守
-        "max_tokens": 2000,
+        "max_tokens": 1700,
     },
     # 委员B配置
     "committee_b": {
