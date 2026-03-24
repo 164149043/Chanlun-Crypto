@@ -21,8 +21,8 @@ interface TypewriterTextProps {
 
 export function TypewriterText({
   text,
-  speed = 5,
-  chunkSize = 5,
+  speed = 10,
+  chunkSize = 3,
   isStreaming = false,
   onComplete,
 }: TypewriterTextProps) {
