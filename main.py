@@ -43,28 +43,30 @@ def print_banner():
 
 
 def select_symbol() -> List[str]:
-    """选择交易对"""
+    """选择交易对（从配置动态读取）"""
     print("\n选择交易对:")
-    print("  1. BTCUSDT")
-    print("  2. ETHUSDT")
-    print("  3. 全部")
+    for i, symbol in enumerate(SYMBOLS, 1):
+        print(f"  {i}. {symbol}")
+    print(f"  {len(SYMBOLS) + 1}. 全部")
     print()
 
     while True:
         try:
-            choice = input("请选择 (1/2/3，回车默认全部): ").strip()
+            choice = input(f"请选择 (1-{len(SYMBOLS) + 1}，回车默认全部): ").strip()
 
-            if not choice or choice == "3":
-                print("已选择: BTCUSDT, ETHUSDT")
-                return ["BTCUSDT", "ETHUSDT"]
-            elif choice == "1":
-                print("已选择: BTCUSDT")
-                return ["BTCUSDT"]
-            elif choice == "2":
-                print("已选择: ETHUSDT")
-                return ["ETHUSDT"]
+            if not choice or choice == str(len(SYMBOLS) + 1):
+                print(f"已选择: {', '.join(SYMBOLS)}")
+                return SYMBOLS
             else:
-                print("请输入 1、2 或 3")
+                try:
+                    idx = int(choice) - 1
+                    if 0 <= idx < len(SYMBOLS):
+                        print(f"已选择: {SYMBOLS[idx]}")
+                        return [SYMBOLS[idx]]
+                    else:
+                        print(f"请输入 1 到 {len(SYMBOLS) + 1} 之间的数字")
+                except ValueError:
+                    print("请输入有效数字")
 
         except KeyboardInterrupt:
             print("\n用户取消")
