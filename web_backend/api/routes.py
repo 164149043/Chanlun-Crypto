@@ -47,7 +47,7 @@ async def get_kline(
     获取 K 线数据
 
     Args:
-        symbol: 交易对 (BTCUSDT / ETHUSDT)
+        symbol: 交易对 (BTCUSDT / ETHUSDT / BNBUSDT / SOLUSDT / DOGEUSDT / XRPUSDT)
         interval: 周期 (1m, 5m, 15m, 1h, 4h, 1d)
         limit: 数量限制
     """
