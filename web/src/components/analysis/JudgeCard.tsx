@@ -65,7 +65,7 @@ export function JudgeCard({ judge }: JudgeCardProps) {
           <TypewriterText
             text={judge.content}
             isStreaming={judge.isStreaming}
-            speed={10}
+            speed={15}
             chunkSize={3}
           />
         ) : (
