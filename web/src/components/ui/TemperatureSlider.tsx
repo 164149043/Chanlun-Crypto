@@ -36,7 +36,7 @@ export function TemperatureSlider({
   return (
     <div className={`flex items-center gap-3 ${disabled ? 'opacity-50' : ''}`}>
       <span className="text-xs text-gray-500 w-10">温度</span>
-      <div className="relative w-28 h-1.5 bg-gray-200 rounded-full">
+      <div className="relative w-28 h-2 bg-gray-200 rounded-full">
         {/* 已滑过的轨道 */}
         <div
           className="absolute h-full rounded-full transition-all duration-150"
@@ -47,8 +47,8 @@ export function TemperatureSlider({
         />
         {/* 滑块 */}
         <motion.div
-          className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full shadow-md border border-gray-200 cursor-pointer"
-          style={{ left: `calc(${percentage}% - 8px)` }}
+          className="absolute top-1/2 -translate-y-1/2 w-5 h-5 bg-white rounded-full shadow-md border border-gray-200 cursor-pointer"
+          style={{ left: `calc(${percentage}% - 10px)` }}
           whileHover={{ scale: disabled ? 1 : 1.2 }}
           whileTap={{ scale: disabled ? 1 : 1.1 }}
         />
