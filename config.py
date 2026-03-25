@@ -163,6 +163,6 @@ COMMITTEE_CONFIG = {
         "provider": "gemini",                     # Gemini官方API
         "model": "gemini-3.1-pro-preview",                # Gemini推理模型
         "temperature": 0.3,                         # 稳定性
-        "max_tokens": 2000,
+        "max_tokens": 3000,
     },
 }
