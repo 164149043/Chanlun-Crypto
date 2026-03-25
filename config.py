@@ -149,14 +149,14 @@ COMMITTEE_CONFIG = {
         "provider": "gemini",                     # Gemini官方API
         "model": "gemini-3-flash-preview",              # Gemini快速模型
         "temperature": 0.5,                         # 中性
-        "max_tokens": 2200,
+        "max_tokens": 1800,
     },
     # 委员C配置
     "committee_c": {
         "provider": "gemini",                   # Gemini官方API
         "model": "gemini-3.1-flash-lite-preview",          # Gemini轻量模型
         "temperature": 0.7,                         # 激进
-        "max_tokens": 2200,
+        "max_tokens": 1800,
     },
     # 裁决官配置
     "judge": {
