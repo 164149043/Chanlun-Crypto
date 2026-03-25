@@ -33,7 +33,7 @@ PROVIDER_DEFAULT_MODELS = {
 }
 
 # 默认系统提示词
-DEFAULT_SYSTEM_PROMPT = "你是专业交易分析助手，请用中文回答。"
+DEFAULT_SYSTEM_PROMPT = "你是专业缠论交易分析助手，请用中文回答。"
 
 
 def get_api_url(provider: str, endpoint: str = "chat/completions") -> str:
