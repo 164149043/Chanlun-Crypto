@@ -1,8 +1,9 @@
 /**
  * SSE 连接 Hook - 处理 Server-Sent Events
+ * 模块级变量确保切换页面时连接不中断
  */
 
-import { useCallback, useRef } from 'react';
+import { useCallback } from 'react';
 import { useAnalysisStore } from '../stores/analysisStore';
 import { useAuthStore } from '../stores/authStore';
 import type { SSEEvent, PositionInfo } from '../types/api';
@@ -11,8 +12,10 @@ import type { SSEEvent, PositionInfo } from '../types/api';
 // 开发环境: VITE_API_BASE 为 http://localhost:8000
 const API_BASE = import.meta.env.VITE_API_BASE ?? '';
 
+// 模块级变量：不受组件卸载影响，切换页面时保持连接
+let abortController: AbortController | null = null;
+
 export function useSSE() {
-  const abortControllerRef = useRef<AbortController | null>(null);
 
   const {
     startAnalysis,
@@ -32,7 +35,7 @@ export function useSSE() {
     startAnalysis(symbol);
 
     // 创建新的 AbortController
-    abortControllerRef.current = new AbortController();
+    abortController = new AbortController();
 
     // 构建请求体，包含持仓信息
     const requestBody: { symbol: string; position?: PositionInfo } = { symbol };
@@ -56,7 +59,7 @@ export function useSSE() {
           ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
         },
         body: JSON.stringify(requestBody),
-        signal: abortControllerRef.current.signal,
+        signal: abortController!.signal,
       });
 
       if (!response.ok) {
@@ -140,9 +143,9 @@ export function useSSE() {
   }, [updateProgress, updateCommittee, updateJudge, completeAnalysis, setError]);
 
   const disconnect = useCallback(() => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-      abortControllerRef.current = null;
+    if (abortController) {
+      abortController.abort();
+      abortController = null;
     }
   }, []);
 
