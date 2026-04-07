@@ -293,7 +293,7 @@ def build_analysis_prompt(data: Dict[str, Any], independent: bool = False) -> st
 请基于以下缠论数据，给出交易策略。
 {position_context}
 你的分析应包含：方向判断、关键价位、风险点等。
-【强制要求】输出内容必须严格控制在800字以内，超出将被截断。
+【强制要求】输出内容必须严格控制在600字以内，超出将被截断。
 {extra}
 多周期数据：
 ```json
@@ -328,7 +328,7 @@ def build_judge_prompt(a: str, b: str, c: str, position: Dict = None) -> str:
 {c}
 
 请基于这三份报告进行判断，给出交易策略。
-【强制要求】输出结果必须严格控制在500字以内，超出将被截断。
+【强制要求】输出结果必须严格控制在400字以内，超出将被截断。
 
 重要：
 你不能重新分析市场原始数据，
