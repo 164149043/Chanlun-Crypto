@@ -138,9 +138,9 @@ COMMITTEE_CONFIG = {
     # ----------------------------------------
     # 委员A配置
     "committee_a": {
-        "provider": "deepseek",                   # 可选: deepseek, siliconflow, gemini
+        "provider": "siliconflow",                   # 可选: deepseek, siliconflow, gemini
     #   "model": "Qwen/Qwen3-30B-A3B-Thinking-2507",
-        "model": "deepseek-chat",                  # DeepSeek对话模型
+        "model": "Pro/deepseek-ai/DeepSeek-V3.2",                  # DeepSeek对话模型
         "temperature": 0.4,                        # 保守
         "max_tokens": 1000,
     },
