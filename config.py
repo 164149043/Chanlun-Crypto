@@ -140,7 +140,7 @@ COMMITTEE_CONFIG = {
     "committee_a": {
         "provider": "siliconflow",                   # 可选: deepseek, siliconflow, gemini
     #   "model": "Qwen/Qwen3-30B-A3B-Thinking-2507",
-        "model": "Pro/deepseek-ai/DeepSeek-V3.2",                  # DeepSeek对话模型
+        "model": "deepseek-ai/DeepSeek-V4-Flash",                  # DeepSeek对话模型
         "temperature": 0.4,                        # 保守
         "max_tokens": 1000,
     },
