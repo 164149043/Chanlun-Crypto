@@ -17,21 +17,21 @@ interface CommitteeCardProps {
 const COMMITTEE_CONFIG = {
   committee_a: {
     name: '委员A',
-    subtitle: '保守派 · 风险厌恶',
+    subtitle: '保守分析',
     gradient: 'from-blue-500 to-cyan-500',
     color: '#3b82f6',
     icon: Shield,
   },
   committee_b: {
     name: '委员B',
-    subtitle: '中立派 · 平衡分析',
+    subtitle: '平衡分析',
     gradient: 'from-purple-500 to-pink-500',
     color: '#8b5cf6',
     icon: Brain,
   },
   committee_c: {
     name: '委员C',
-    subtitle: '激进派 · 高风险偏好',
+    subtitle: '激进分析',
     gradient: 'from-orange-500 to-red-500',
     color: '#f97316',
     icon: Zap,
