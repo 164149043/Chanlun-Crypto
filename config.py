@@ -161,7 +161,7 @@ COMMITTEE_CONFIG = {
     # 裁决官配置
     "judge": {
         "provider": "gemini",                     # Gemini官方API
-        "model": "gemini-3.1-pro-preview",                # Gemini推理模型
+        "model": "gemini-3.5-flash",                # Gemini推理模型
         "temperature": 0.3,                         # 稳定性
         "max_tokens": 3000,
     },
